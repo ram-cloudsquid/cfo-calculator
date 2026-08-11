@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFO ROI Calculator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            /* ---- cloudsquid, read off the client deck --------------------
+               Accent trio: violet leads, orchid and olive support. Ink is a
+               near-black with a violet cast, never neutral grey-black.       */
+            --cs-purple: #6d39ff;              /* violet — primary accent   */
+            --cs-purple-hover: #5b2be6;
+            --cs-purple-tint: #ece9fd;         /* lavender fill             */
+            --cs-purple-ring: rgba(109, 57, 255, 0.18);
+            --cs-orchid: #b054c4;              /* secondary accent          */
+            --cs-orchid-tint: #f6ecf7;
+            --cs-olive: #8ea842;               /* tertiary accent           */
+            --cs-olive-tint: #eef0e0;
+            --cs-ink: #211c3c;                 /* headings, rules, dark fill*/
+            --cs-offwhite: #f4f4f2;            /* slide ground — warm grey   */
+            --cs-offwhite-bright: #ffffff;
+            --cs-border: #e4e4de;              /* hairline                  */
+            /* The deck is flat: square corners, hairlines, no soft shadows. */
+            --cs-radius-lg: 2px;
+            --cs-radius: 2px;
+            --gray-900: #211c3c;
+            --gray-700: #3f3a57;
+            --gray-500: #5f5a75;
+            --gray-400: #6f6a83;
+            --gray-300: #cfcddb;
+            --gray-200: #e4e4de;
+            --gray-100: #f0f0ec;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-900);
+            min-height: 100vh;
+            padding: 40px 20px;
+            /* Flat slide ground, as in the deck. The only background element is
+               the deck's own motif: a scoped population with a few cells
+               flagged — which is exactly what this page computes. */
+            background-color: var(--cs-offwhite);
+            background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27894%27%20height%3D%27138%27%20viewBox%3D%270%200%20894%20138%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27f%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23fff%27%20stop-opacity%3D%270%27%2F%3E%3Cstop%20offset%3D%27.24%27%20stop-color%3D%27%23fff%27%20stop-opacity%3D%271%27%2F%3E%3Cstop%20offset%3D%27.76%27%20stop-color%3D%27%23fff%27%20stop-opacity%3D%271%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23fff%27%20stop-opacity%3D%270%27%2F%3E%3C%2FlinearGradient%3E%3Cmask%20id%3D%27m%27%3E%3Crect%20width%3D%27894%27%20height%3D%27138%27%20fill%3D%27url%28%23f%29%27%2F%3E%3C%2Fmask%3E%3C%2Fdefs%3E%3Cg%20mask%3D%27url%28%23m%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%277%27%20y1%3D%2721%27%20x2%3D%2723%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2736%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2743%27%20y1%3D%2721%27%20x2%3D%2759%27%20y2%3D%2721%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2772%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2779%27%20y1%3D%2721%27%20x2%3D%2795%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27108%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27115%27%20y1%3D%2721%27%20x2%3D%27131%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27144%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27151%27%20y1%3D%2721%27%20x2%3D%27167%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27180%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27187%27%20y1%3D%2721%27%20x2%3D%27203%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27216%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27223%27%20y1%3D%2721%27%20x2%3D%27239%27%20y2%3D%2721%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27252%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27259%27%20y1%3D%2721%27%20x2%3D%27275%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27288%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27295%27%20y1%3D%2721%27%20x2%3D%27311%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27324%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27331%27%20y1%3D%2721%27%20x2%3D%27347%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27360%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27367%27%20y1%3D%2721%27%20x2%3D%27383%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27396%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27403%27%20y1%3D%2721%27%20x2%3D%27419%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27432%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27439%27%20y1%3D%2721%27%20x2%3D%27455%27%20y2%3D%2721%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27468%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27475%27%20y1%3D%2721%27%20x2%3D%27491%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27504%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27511%27%20y1%3D%2721%27%20x2%3D%27527%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27540%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27547%27%20y1%3D%2721%27%20x2%3D%27563%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27576%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27583%27%20y1%3D%2721%27%20x2%3D%27599%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27612%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27619%27%20y1%3D%2721%27%20x2%3D%27635%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27648%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27655%27%20y1%3D%2721%27%20x2%3D%27671%27%20y2%3D%2721%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27684%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27691%27%20y1%3D%2721%27%20x2%3D%27707%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27720%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27727%27%20y1%3D%2721%27%20x2%3D%27743%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27756%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27763%27%20y1%3D%2721%27%20x2%3D%27779%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27792%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27799%27%20y1%3D%2721%27%20x2%3D%27815%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27828%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27835%27%20y1%3D%2721%27%20x2%3D%27851%27%20y2%3D%2721%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27864%27%20y%3D%270%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27871%27%20y1%3D%2721%27%20x2%3D%27887%27%20y2%3D%2721%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%270%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%277%27%20y1%3D%2757%27%20x2%3D%2723%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2736%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2743%27%20y1%3D%2757%27%20x2%3D%2759%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2772%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2779%27%20y1%3D%2757%27%20x2%3D%2795%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27108%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27115%27%20y1%3D%2757%27%20x2%3D%27131%27%20y2%3D%2757%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27144%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27151%27%20y1%3D%2757%27%20x2%3D%27167%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27180%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27187%27%20y1%3D%2757%27%20x2%3D%27203%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27216%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27223%27%20y1%3D%2757%27%20x2%3D%27239%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27252%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27259%27%20y1%3D%2757%27%20x2%3D%27275%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27288%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27295%27%20y1%3D%2757%27%20x2%3D%27311%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27324%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27331%27%20y1%3D%2757%27%20x2%3D%27347%27%20y2%3D%2757%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27360%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27367%27%20y1%3D%2757%27%20x2%3D%27383%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27396%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27403%27%20y1%3D%2757%27%20x2%3D%27419%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27432%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27439%27%20y1%3D%2757%27%20x2%3D%27455%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27468%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27475%27%20y1%3D%2757%27%20x2%3D%27491%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27504%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27511%27%20y1%3D%2757%27%20x2%3D%27527%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27540%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27547%27%20y1%3D%2757%27%20x2%3D%27563%27%20y2%3D%2757%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27576%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27583%27%20y1%3D%2757%27%20x2%3D%27599%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27612%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27619%27%20y1%3D%2757%27%20x2%3D%27635%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27648%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27655%27%20y1%3D%2757%27%20x2%3D%27671%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27684%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27691%27%20y1%3D%2757%27%20x2%3D%27707%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27720%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27727%27%20y1%3D%2757%27%20x2%3D%27743%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27756%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27763%27%20y1%3D%2757%27%20x2%3D%27779%27%20y2%3D%2757%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27792%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27799%27%20y1%3D%2757%27%20x2%3D%27815%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27828%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27835%27%20y1%3D%2757%27%20x2%3D%27851%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27864%27%20y%3D%2736%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27871%27%20y1%3D%2757%27%20x2%3D%27887%27%20y2%3D%2757%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%270%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%277%27%20y1%3D%2793%27%20x2%3D%2723%27%20y2%3D%2793%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2736%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2743%27%20y1%3D%2793%27%20x2%3D%2759%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2772%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2779%27%20y1%3D%2793%27%20x2%3D%2795%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27108%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27115%27%20y1%3D%2793%27%20x2%3D%27131%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27144%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27151%27%20y1%3D%2793%27%20x2%3D%27167%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27180%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27187%27%20y1%3D%2793%27%20x2%3D%27203%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27216%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27223%27%20y1%3D%2793%27%20x2%3D%27239%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27252%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27259%27%20y1%3D%2793%27%20x2%3D%27275%27%20y2%3D%2793%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27288%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27295%27%20y1%3D%2793%27%20x2%3D%27311%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27324%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27331%27%20y1%3D%2793%27%20x2%3D%27347%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27360%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27367%27%20y1%3D%2793%27%20x2%3D%27383%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27396%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27403%27%20y1%3D%2793%27%20x2%3D%27419%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27432%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27439%27%20y1%3D%2793%27%20x2%3D%27455%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27468%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27475%27%20y1%3D%2793%27%20x2%3D%27491%27%20y2%3D%2793%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27504%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27511%27%20y1%3D%2793%27%20x2%3D%27527%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27540%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27547%27%20y1%3D%2793%27%20x2%3D%27563%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27576%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27583%27%20y1%3D%2793%27%20x2%3D%27599%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27612%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27619%27%20y1%3D%2793%27%20x2%3D%27635%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27648%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27655%27%20y1%3D%2793%27%20x2%3D%27671%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27684%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27691%27%20y1%3D%2793%27%20x2%3D%27707%27%20y2%3D%2793%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27720%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27727%27%20y1%3D%2793%27%20x2%3D%27743%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27756%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27763%27%20y1%3D%2793%27%20x2%3D%27779%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27792%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27799%27%20y1%3D%2793%27%20x2%3D%27815%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27828%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27835%27%20y1%3D%2793%27%20x2%3D%27851%27%20y2%3D%2793%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27864%27%20y%3D%2772%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27871%27%20y1%3D%2793%27%20x2%3D%27887%27%20y2%3D%2793%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%270%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%277%27%20y1%3D%27129%27%20x2%3D%2723%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2736%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2743%27%20y1%3D%27129%27%20x2%3D%2759%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%2772%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%2779%27%20y1%3D%27129%27%20x2%3D%2795%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27108%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27115%27%20y1%3D%27129%27%20x2%3D%27131%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27144%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27151%27%20y1%3D%27129%27%20x2%3D%27167%27%20y2%3D%27129%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27180%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27187%27%20y1%3D%27129%27%20x2%3D%27203%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27216%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27223%27%20y1%3D%27129%27%20x2%3D%27239%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27252%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27259%27%20y1%3D%27129%27%20x2%3D%27275%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27288%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27295%27%20y1%3D%27129%27%20x2%3D%27311%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27324%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27331%27%20y1%3D%27129%27%20x2%3D%27347%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27360%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27367%27%20y1%3D%27129%27%20x2%3D%27383%27%20y2%3D%27129%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27396%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27403%27%20y1%3D%27129%27%20x2%3D%27419%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27432%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27439%27%20y1%3D%27129%27%20x2%3D%27455%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27468%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27475%27%20y1%3D%27129%27%20x2%3D%27491%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27504%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27511%27%20y1%3D%27129%27%20x2%3D%27527%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27540%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27547%27%20y1%3D%27129%27%20x2%3D%27563%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27576%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27583%27%20y1%3D%27129%27%20x2%3D%27599%27%20y2%3D%27129%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27612%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27619%27%20y1%3D%27129%27%20x2%3D%27635%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27648%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27655%27%20y1%3D%27129%27%20x2%3D%27671%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27684%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27691%27%20y1%3D%27129%27%20x2%3D%27707%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27720%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27727%27%20y1%3D%27129%27%20x2%3D%27743%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27756%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27763%27%20y1%3D%27129%27%20x2%3D%27779%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27792%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f5f7ec%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27799%27%20y1%3D%27129%27%20x2%3D%27815%27%20y2%3D%27129%27%20stroke%3D%27%23e2e9ce%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27828%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27835%27%20y1%3D%27129%27%20x2%3D%27851%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Crect%20x%3D%27864%27%20y%3D%27108%27%20width%3D%2730%27%20height%3D%2730%27%20fill%3D%27%23f8f7fe%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3Cline%20x1%3D%27871%27%20y1%3D%27129%27%20x2%3D%27887%27%20y2%3D%27129%27%20stroke%3D%27%23e9e6fb%27%20stroke-width%3D%271.2%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: center top 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding-top: 18px;
+            margin-bottom: 40px;
+            color: var(--cs-purple);
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 20px;
+        }
+
+        .calculator-intro {
+            max-width: 640px;
+            margin: 0 auto 24px auto;
+            text-align: left;
+            line-height: 1.6;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
+            font-size: 14px;
+            color: var(--cs-ink);
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--cs-border);
+            border-radius: 0;
+            padding: 12px 24px;
+        }
+
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-500);
+            margin-right: 12px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            margin-right: 12px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--cs-purple);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .mode-indicator {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cs-purple);
+            min-width: 60px;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* The deck's card device: a flat white panel, hairline edge, and a
+           3px accent rule across the top. Violet for the work, olive for the
+           conclusion. */
+        .form-section {
+            background: #fff;
+            border: 1px solid var(--cs-border);
+            border-top: 3px solid var(--cs-purple);
+            border-radius: 0;
+            padding: 32px;
+        }
+
+        .summary-section {
+            background: #fff;
+            border: 1px solid var(--cs-border);
+            border-top: 3px solid var(--cs-olive);
+            border-radius: 0;
+            padding: 24px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .section-group {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .section-group:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Eyebrow, set exactly as the deck sets its kickers, with a short
+           accent bar that colour-codes the section. */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cs-purple);
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            margin-bottom: 18px;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 18px;
+            height: 3px;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+
+
+        .subsection-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-top: 16px;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 2px solid var(--cs-border);
+        }
+
+        .advanced-only, .simple-only {
+            display: none;
+        }
+
+        .advanced-only.active, .simple-only.active {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row.half {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group label span.hint {
+            font-size: 10px;
+            font-weight: normal;
+            color: var(--gray-400);
+            font-style: italic;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: 0;
+            font-size: 12px;
+            font-family: inherit;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            background: #fff;
+            border-color: var(--cs-purple);
+            box-shadow: 0 0 0 3px var(--cs-purple-ring);
+        }
+
+        /* Yours to fill in: clean surface, live brand edge */
+        .form-group input[type="number"] {
+            background: #fff;
+            border-left: 2px solid var(--cs-purple);
+        }
+
+        .helper-text {
+            font-size: 10px;
+            color: var(--gray-400);
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .summary-headline {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--gray-400);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        /* The deck's callout strip: tinted band, accent rule down the left. */
+        .scenario-card {
+            background: var(--cs-offwhite);
+            border-radius: 0;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--gray-300);
+        }
+
+        .scenario-card.bear {
+            border-left-color: var(--cs-orchid);
+            background: var(--cs-orchid-tint);
+        }
+
+        .scenario-card.base {
+            border-left-color: var(--cs-purple);
+            background: var(--cs-purple-tint);
+        }
+
+        .scenario-card.bull {
+            border-left-color: var(--cs-olive);
+            background: var(--cs-olive-tint);
+        }
+
+        .scenario-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .scenario-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--cs-purple);
+        }
+
+        .scenario-breakdown {
+            font-size: 10px;
+            color: var(--gray-400);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .metric-box {
+            background: #fff;
+            border: 1px solid var(--cs-border);
+            padding: 9px 10px;
+            border-radius: var(--cs-radius);
+            font-size: 11px;
+        }
+
+        .metric-label {
+            color: var(--gray-400);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: var(--cs-purple);
+            font-weight: 700;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .reference-box {
+            margin-top: 16px;
+            padding: 14px;
+            background: var(--cs-offwhite);
+            border: 1px solid var(--cs-border);
+            border-radius: var(--cs-radius);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .blog-link-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .blog-link-table td {
+            padding: 12px 14px;
+            background: var(--cs-purple-tint);
+            border: 1px solid var(--cs-border);
+            border-radius: var(--cs-radius);
+        }
+
+        .blog-link-table a {
+            color: var(--cs-purple);
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .blog-link-table a:hover {
+            text-decoration: underline;
+        }
+
+        .external-link-icon {
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            opacity: 0.75;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--cs-radius);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--cs-purple);
+            color: #fff;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-primary:hover {
+            background: var(--cs-purple-hover);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--cs-ink);
+            border: 1px solid var(--cs-ink);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-100);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(33, 28, 60, 0.55);
+            animation: fadeIn 0.2s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border: 1px solid var(--cs-border);
+            border-top: 3px solid var(--cs-purple);
+            border-radius: 0;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: var(--cs-purple);
+            margin-bottom: 6px;
+        }
+
+        .modal-header p {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .modal-body {
+            margin: 24px 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-footer button {
+            flex: 1;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid var(--gray-100);
+            border-top: 3px solid var(--cs-purple);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-section {
+                position: static;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+            .mode-selector {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    
+        /* Tooltip styles */
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--cs-purple);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .tooltip-icon::before {
+            content: "?";
+        }
+
+        .tooltip-icon:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--gray-900);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tooltip-icon:hover::before {
+            content: "";
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .tooltip-icon:hover::after {
+                white-space: normal;
+                max-width: 200px;
+                font-size: 10px;
+            }
+        }
+</style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CFO ROI Calculator</h1>
+            <p>Estimate recovery potential from finance automation</p>
+
+            <p class="calculator-intro">
+                This calculator estimates how much money your finance team could recover each year by
+                automating three common leak points: Accounts Payable errors (duplicate payments, missed
+                discounts, fraud), Freight Audit overcharges, and Receivables &amp; Deduction disputes.
+                Enter your company profile and either use industry-benchmark defaults (Simple mode) or your
+                own detailed figures (Advanced mode) to see a Bear/Base/Bull recovery estimate, then download
+                a full editable Excel model to review or share internally.
+            </p>
+
+            <!-- Mode Toggle -->
+            <div class="mode-selector">
+                <div class="toggle-container">
+                    <span class="toggle-label">Mode:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="mode-indicator" id="modeLabel">Simple</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Form -->
+            <div class="form-section">
+                <form id="roiForm">
+                    <!-- Company Profile (Both Modes) -->
+                    <div class="section-group">
+                        <h3 class="section-title">Company Profile</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><span class="tooltip-wrapper">Company Name<span class="tooltip-icon" data-tooltip="Name of your company"></span></span></label>
+                                <input type="text" id="companyName" required placeholder="e.g. Acme Corp">
+                            </div>
+                            <div class="form-group">
+                                <label><span class="tooltip-wrapper">Revenue ($M)<span class="tooltip-icon" data-tooltip="Your company's total annual revenue in millions"></span></span></label>
+                                <input type="number" id="revenue" required min="1" placeholder="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Employees</label>
+                                <select id="companySize" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="250">250</option>
+                                    <option value="500">500</option>
+                                    <option value="1000">1,000</option>
+                                    <option value="5000">5,000+</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row half">
+                            <div class="form-group">
+                                <label>Industry</label>
+                                <select id="industry" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="retail">Retail / e-Commerce</option>
+                                    <option value="pharma">Pharma / Healthcare</option>
+                                    <option value="tech">Technology</option>
+                                    <option value="financial">Financial Services</option>
+                                    <option value="general">General / Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Region</label>
+                                <select id="region" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="us">North America</option>
+                                    <option value="eu">Europe</option>
+                                    <option value="apac">Asia-Pacific</option>
+                                    <option value="global">Global</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== SIMPLE MODE ========== -->
+                    <div class="simple-only active">
+
+                        <!-- SIMPLE RECEIVABLES -->
+                        <div class="section-group">
+                            <h3 class="section-title">Receivables & Deductions</h3>
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Annual Deductions (% of revenue)<span class="tooltip-icon" data-tooltip="Deductions as a percentage of total revenue"></span></span></label>
+                                    <input type="number" id="recDeductionRate" step="0.1" value="1.5" placeholder="1.5">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of deductions currently being recovered"></span></span></label>
+                                    <input type="number" id="recCurrentRecovery" step="1" value="35" placeholder="35">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Target Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered, what percentage do you expect automation to capture?"></span></span></label>
+                                    <input type="number" id="recTargetCapture" step="1" value="60" placeholder="60">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Prevention (%)<span class="tooltip-icon" data-tooltip="Percentage of deductions you can prevent going forward"></span></span></label>
+                                    <input type="number" id="recPrevention" step="1" value="12" placeholder="12">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Reduction (%)<span class="tooltip-icon" data-tooltip="Expected reduction in processing time (days)"></span></span></label>
+                                    <input type="number" id="recTimeReduction" step="5" value="40" placeholder="40">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SIMPLE AP -->
+                        <div class="section-group">
+                            <h3 class="section-title">Accounts Payable</h3>
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Annual AP Volume ($M)<span class="tooltip-icon" data-tooltip="Total annual accounts payable spending in millions"></span></span></label>
+                                    <input type="number" id="apVolume" step="0.1" value="20" placeholder="20">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Problem Ratio (%) <span class="hint">overall issues</span></label>
+                                    <input type="number" id="apProblemRatio" step="0.1" value="3" placeholder="3">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Issue Amount ($)<span class="tooltip-icon" data-tooltip="Average dollar amount per problematic invoice"></span></span></label>
+                                    <input type="number" id="apIssueAmount" step="100" value="2500" placeholder="2500">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of identified issues you can successfully recover"></span></span></label>
+                                    <input type="number" id="apRecoveryRate" step="1" value="70" placeholder="70">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SIMPLE FREIGHT -->
+                        <div class="section-group">
+                            <h3 class="section-title">Freight Audit</h3>
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Annual Freight Spend ($M)<span class="tooltip-icon" data-tooltip="Total annual freight spending in millions"></span></span></label>
+                                    <input type="number" id="freightVolume" step="0.1" value="5" placeholder="5">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Audit Coverage (%)<span class="tooltip-icon" data-tooltip="Percentage of shipments that can be audited for errors"></span></span></label>
+                                    <input type="number" id="freightAuditCoverage" step="1" value="60" placeholder="60">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Overcharge Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of audited shipments with overcharges"></span></span></label>
+                                    <input type="number" id="freightOverchargeRate" step="1" value="8" placeholder="8">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of overcharges successfully recovered"></span></span></label>
+                                    <input type="number" id="freightRecoveryRate" step="1" value="75" placeholder="75">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ========== ADVANCED MODE ========== -->
+                    <div class="advanced-only">
+
+                        <!-- ADVANCED RECEIVABLES -->
+                        <div class="section-group">
+                            <h3 class="section-title">Receivables & Deductions Analysis</h3>
+
+                            <div class="subsection-title">Promotional Deductions</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% of Revenue<span class="tooltip-icon" data-tooltip="Promotional deductions as percentage of revenue"></span></span></label>
+                                    <input type="number" id="advRecPromoRate" step="0.1" value="0.5" placeholder="0.5">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Valid (%)<span class="tooltip-icon" data-tooltip="Percentage of promotional deductions that are valid"></span></span></label>
+                                    <input type="number" id="advRecPromoValid" step="1" value="70" placeholder="70">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of invalid promotions you can recover"></span></span></label>
+                                    <input type="number" id="advRecPromoRecovery" step="1" value="20" placeholder="20">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Quality/Damage Disputes</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% of Revenue<span class="tooltip-icon" data-tooltip="Quality/damage disputes as percentage of revenue"></span></span></label>
+                                    <input type="number" id="advRecQualityRate" step="0.1" value="0.3" placeholder="0.3">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Valid (%)<span class="tooltip-icon" data-tooltip="Percentage of quality disputes that are valid claims"></span></span></label>
+                                    <input type="number" id="advRecQualityValid" step="1" value="55" placeholder="55">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of invalid quality claims you can recover"></span></span></label>
+                                    <input type="number" id="advRecQualityRecovery" step="1" value="30" placeholder="30">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Short Qty / Missing</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% of Revenue<span class="tooltip-icon" data-tooltip="Short shipments as percentage of revenue"></span></span></label>
+                                    <input type="number" id="advRecShortRate" step="0.1" value="0.25" placeholder="0.25">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Valid (%)<span class="tooltip-icon" data-tooltip="Percentage of short shipment claims that are valid"></span></span></label>
+                                    <input type="number" id="advRecShortValid" step="1" value="85" placeholder="85">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of invalid short claims you can recover"></span></span></label>
+                                    <input type="number" id="advRecShortRecovery" step="1" value="45" placeholder="45">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Pricing Disputes</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% of Revenue<span class="tooltip-icon" data-tooltip="Pricing disputes as percentage of revenue"></span></span></label>
+                                    <input type="number" id="advRecPricingRate" step="0.1" value="0.15" placeholder="0.15">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Valid (%)<span class="tooltip-icon" data-tooltip="Percentage of pricing disputes that are valid claims"></span></span></label>
+                                    <input type="number" id="advRecPricingValid" step="1" value="50" placeholder="50">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of invalid pricing claims you can recover"></span></span></label>
+                                    <input type="number" id="advRecPricingRecovery" step="1" value="15" placeholder="15">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Authorized Returns</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% of Revenue<span class="tooltip-icon" data-tooltip="Unauthorized returns as percentage of revenue"></span></span></label>
+                                    <input type="number" id="advRecReturnRate" step="0.1" value="0.3" placeholder="0.3">
+                                </div>
+                                <div class="form-group">
+                                    <label>Proc. Time (days)</label>
+                                    <input type="number" id="advRecReturnDays" step="1" value="45" placeholder="45">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Recovery (%)<span class="tooltip-icon" data-tooltip="Percentage of unauthorized returns you can recover"></span></span></label>
+                                    <input type="number" id="advRecReturnRecovery" step="1" value="75" placeholder="75">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">AI Impact</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Target Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered across all categories, what percentage do you expect automation to capture?"></span></span></label>
+                                    <input type="number" id="advRecTargetCapture" step="1" value="80" placeholder="80">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Reduction (%)<span class="tooltip-icon" data-tooltip="Expected reduction in processing time (days)"></span></span></label>
+                                    <input type="number" id="advRecTimeReduction" step="5" value="40" placeholder="40">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Deduction Prevention (%)<span class="tooltip-icon" data-tooltip="Percentage of deductions you can prevent with better processes"></span></span></label>
+                                    <input type="number" id="advRecPrevention" step="1" value="15" placeholder="15">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ADVANCED AP -->
+                        <div class="section-group">
+                            <h3 class="section-title">Accounts Payable Analysis</h3>
+
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Annual AP Volume ($M)<span class="tooltip-icon" data-tooltip="Total annual accounts payable spending in millions"></span></span></label>
+                                    <input type="number" id="advApVolume" step="0.1" value="20" placeholder="20">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">3-Way Match Failures</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Failure Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of invoices failing three-way match validation"></span></span></label>
+                                    <input type="number" id="advAp3wayFailure" step="0.1" value="2.5" placeholder="2.5">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Amount ($)<span class="tooltip-icon" data-tooltip="Average dollar amount of failed three-way match invoices"></span></span></label>
+                                    <input type="number" id="advAp3wayAmount" step="100" value="2500" placeholder="2500">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of three-way failures successfully recovered"></span></span></label>
+                                    <input type="number" id="advAp3wayRecovery" step="1" value="65" placeholder="65">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Duplicate Payments</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Duplicate Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of invoices that are duplicates"></span></span></label>
+                                    <input type="number" id="advApDupRate" step="0.1" value="0.4" placeholder="0.4">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Amount ($)<span class="tooltip-icon" data-tooltip="Average dollar amount of duplicate invoices"></span></span></label>
+                                    <input type="number" id="advApDupAmount" step="100" value="3500" placeholder="3500">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of duplicates successfully recovered"></span></span></label>
+                                    <input type="number" id="advApDupRecovery" step="1" value="90" placeholder="90">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Fraud & Unauthorized</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Fraud Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of invoices flagged as fraudulent or suspicious"></span></span></label>
+                                    <input type="number" id="advApFraudRate" step="0.1" value="0.3" placeholder="0.3">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Amount ($)<span class="tooltip-icon" data-tooltip="Average dollar amount of fraudulent invoices"></span></span></label>
+                                    <input type="number" id="advApFraudAmount" step="100" value="5000" placeholder="5000">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of fraud successfully recovered"></span></span></label>
+                                    <input type="number" id="advApFraudRecovery" step="1" value="45" placeholder="45">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Missed Credits</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Monthly Credits ($K)<span class="tooltip-icon" data-tooltip="Total vendor credits issued monthly in thousands"></span></span></label>
+                                    <input type="number" id="advApCreditMonthly" step="0.1" value="15" placeholder="15">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Not Applied (%)<span class="tooltip-icon" data-tooltip="Percentage of credits not applied to outstanding invoices"></span></span></label>
+                                    <input type="number" id="advApCreditNotApplied" step="1" value="12" placeholder="12">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of unapplied credits successfully recovered"></span></span></label>
+                                    <input type="number" id="advApCreditRecovery" step="1" value="85" placeholder="85">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Early Payment Discounts</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Discount (%)<span class="tooltip-icon" data-tooltip="Average early payment discount percentage offered"></span></span></label>
+                                    <input type="number" id="advApDiscountRate" step="0.1" value="1.5" placeholder="1.5">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Eligible Invoices (%)<span class="tooltip-icon" data-tooltip="Percentage of invoices eligible for early payment discount"></span></span></label>
+                                    <input type="number" id="advApDiscountEligible" step="1" value="35" placeholder="35">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Current Capture (%)<span class="tooltip-icon" data-tooltip="Percentage of eligible discounts currently being captured"></span></span></label>
+                                    <input type="number" id="advApDiscountCapture" step="1" value="40" placeholder="40">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ADVANCED FREIGHT -->
+                        <div class="section-group">
+                            <h3 class="section-title">Freight Audit Analysis</h3>
+
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Annual Freight Spend ($M)<span class="tooltip-icon" data-tooltip="Total annual freight spending in millions"></span></span></label>
+                                    <input type="number" id="advFreightVolume" step="0.1" value="5" placeholder="5">
+                                    <span class="helper-text">Note: calculator assumes $500 avg shipment value. Adjust if your avg is different (parcel vs LTL vs TL mix).</span>
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Weight & Zone Misclassification</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Auditable Shipments (%)<span class="tooltip-icon" data-tooltip="Percentage of shipments that can be audited"></span></span></label>
+                                    <input type="number" id="advFreightAuditablePct" step="1" value="65" placeholder="65">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Misclass. Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of auditable shipments with weight/zone errors"></span></span></label>
+                                    <input type="number" id="advFreightMisclassRate" step="1" value="18" placeholder="18">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Overcharge ($)<span class="tooltip-icon" data-tooltip="Average overcharge per misclassified shipment in dollars"></span></span></label>
+                                    <input type="number" id="advFreightMisclassAvg" step="1" value="45" placeholder="45">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Accessorial Charges</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">% With Accessorials<span class="tooltip-icon" data-tooltip="Percentage of shipments with accessorial charges"></span></span></label>
+                                    <input type="number" id="advFreightAccessPct" step="1" value="22" placeholder="22">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Invalid Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of accessorial charges that are invalid"></span></span></label>
+                                    <input type="number" id="advFreightAccessInvalid" step="1" value="12" placeholder="12">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Invalid Charge ($)<span class="tooltip-icon" data-tooltip="Average invalid accessorial charge amount in dollars"></span></span></label>
+                                    <input type="number" id="advFreightAccessAvg" step="1" value="38" placeholder="38">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Rate Non-Compliance</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Compliance Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of shipments charged at agreed contract rates"></span></span></label>
+                                    <input type="number" id="advFreightRateCompliance" step="1" value="68" placeholder="68">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Overcharge (%)<span class="tooltip-icon" data-tooltip="Percentage overcharge on non-compliant shipments"></span></span></label>
+                                    <input type="number" id="advFreightRateOvercharge" step="1" value="8" placeholder="8">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of rate overcharges successfully recovered"></span></span></label>
+                                    <input type="number" id="advFreightRateRecovery" step="1" value="70" placeholder="70">
+                                </div>
+                            </div>
+
+                            <div class="subsection-title">Claims & Loss/Damage</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Claim-Worthy (%)<span class="tooltip-icon" data-tooltip="Percentage of shipments eligible for damage/loss claims"></span></span></label>
+                                    <input type="number" id="advFreightClaimRate" step="0.1" value="1.2" placeholder="1.2">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Avg Claim ($)<span class="tooltip-icon" data-tooltip="Average claim amount in dollars"></span></span></label>
+                                    <input type="number" id="advFreightClaimAvg" step="100" value="1200" placeholder="1200">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Approval Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of filed claims approved and recovered"></span></span></label>
+                                    <input type="number" id="advFreightClaimApproval" step="1" value="55" placeholder="55">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                        <button type="submit" class="btn-primary">Calculate & Download</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Summary -->
+            <div class="summary-section">
+                <div class="summary-headline">Annual Recovery Potential</div>
+
+                <div class="scenario-card base">
+                    <div class="scenario-label">Base Case</div>
+                    <div class="scenario-amount" id="baseTotal">$0</div>
+                    <div class="scenario-breakdown" id="baseBreakdown"></div>
+                </div>
+
+                <div class="scenario-card bear">
+                    <div class="scenario-label">Conservative (−30%)</div>
+                    <div class="scenario-amount" id="bearTotal">$0</div>
+                </div>
+
+                <div class="scenario-card bull">
+                    <div class="scenario-label">Optimistic (+35%)</div>
+                    <div class="scenario-amount" id="bullTotal">$0</div>
+                </div>
+
+                <table class="blog-link-table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a href="https://cloudsquid.io/learn/" target="_blank" rel="noopener noreferrer" class="external-link">
+                                    Guide to finance leakage, recovery, and control.
+                                    <span class="external-link-icon" aria-hidden="true">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                                        </svg>
+                                    </span>
+                                    <span class="sr-only">(opens in a new tab)</span>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr style="margin: 16px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+                <div class="summary-headline">Key Metrics</div>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">Recovery/Revenue</div>
+                        <div class="metric-value" id="recoveryPercent">0.00%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Recovery/Employee</div>
+                        <div class="metric-value" id="recoveryPerEmployee">$0</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Payback (1 FTE)</div>
+                        <div class="metric-value" id="paybackMonths">0 mo</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">DSO Improvement</div>
+                        <div class="metric-value" id="dsoImpact">0 days</div>
+                    </div>
+                </div>
+
+                <div class="reference-box">
+                    <button class="assumptions-ref-btn assumptions-ref-btn--inline" onclick="openAssumptionsReference()">
+                        Assumptions Reference
+                    </button>
+                    <button class="assumptions-ref-btn assumptions-ref-btn--inline" onclick="openMethodologyReference()">
+                        Calculation Formulas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Download Your Analysis</h2>
+                <p>Complete your information to receive the detailed Excel model</p>
+            </div>
+            <div class="modal-body">
+                <form id="downloadForm">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="fullName" required placeholder="John Smith">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Email</label>
+                        <input type="email" id="email" required placeholder="john@company.com">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Company</label>
+                        <input type="text" id="confirmCompany" required placeholder="">
+                    </div>
+                </form>
+                <div class="loading" id="downloadLoading">
+                    <div class="spinner"></div>
+                    <p>Generating your custom Excel workbook...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeDownloadModal()">Cancel</button>
+                <button type="submit" form="downloadForm" class="btn-primary" id="downloadBtn">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdvancedMode = false;
+
+        function toggleMode() {
+            isAdvancedMode = !isAdvancedMode;
+            document.getElementById('modeLabel').textContent = isAdvancedMode ? 'Advanced' : 'Simple';
+            
+            // Toggle visibility
+            document.querySelectorAll('.simple-only').forEach(el => el.classList.toggle('active'));
+            document.querySelectorAll('.advanced-only').forEach(el => el.classList.toggle('active'));
+            
+            // Sync values between modes
+            if (isAdvancedMode) {
+                syncToAdvanced();
+            } else {
+                syncToSimple();
+            }
+            
+            calculateAll();
+        }
+
+        function syncToAdvanced() {
+            document.getElementById('advApVolume').value = document.getElementById('apVolume').value;
+            document.getElementById('advFreightVolume').value = document.getElementById('freightVolume').value;
+        }
+
+        function syncToSimple() {
+            document.getElementById('apVolume').value = document.getElementById('advApVolume').value;
+            document.getElementById('freightVolume').value = document.getElementById('advFreightVolume').value;
+        }
+
+        const form = document.getElementById('roiForm');
+        const inputs = form.querySelectorAll('input, select');
+
+        inputs.forEach(input => {
+            input.addEventListener('change', calculateAll);
+            input.addEventListener('input', calculateAll);
+        });
+
+        function calculateAll() {
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const size = parseInt(document.getElementById('companySize').value) || 1;
+
+            let apRecovery, freightRecovery, receivablesRecovery;
+
+            if (isAdvancedMode) {
+                apRecovery = calculateAPAdvanced(revenue);
+                freightRecovery = calculateFreightAdvanced(revenue);
+                receivablesRecovery = calculateReceivablesAdvanced(revenue);
+            } else {
+                apRecovery = calculateAPSimple(revenue);
+                freightRecovery = calculateFreightSimple(revenue);
+                receivablesRecovery = calculateReceivablesSimple(revenue);
+            }
+
+            let baseTotal = apRecovery.base + freightRecovery.base + receivablesRecovery.base;
+            let bearTotal = apRecovery.bear + freightRecovery.bear + receivablesRecovery.bear;
+            let bullTotal = apRecovery.bull + freightRecovery.bull + receivablesRecovery.bull;
+
+            updateDisplay(baseTotal, bearTotal, bullTotal, size, revenue, apRecovery, freightRecovery, receivablesRecovery);
+        }
+
+        // ===== SIMPLE MODE CALCULATIONS =====
+        function calculateAPSimple(revenue) {
+            const apVolume = parseFloat(document.getElementById('apVolume').value) || 0;
+            const problemRatio = (parseFloat(document.getElementById('apProblemRatio').value) || 0) / 100;
+            const issueAmount = parseFloat(document.getElementById('apIssueAmount').value) || 0;
+            const recoveryRate = (parseFloat(document.getElementById('apRecoveryRate').value) || 0) / 100;
+
+            const issueCount = (apVolume * 1000000 / issueAmount * problemRatio);
+            const total = issueCount * issueAmount * recoveryRate;
+
+            return { base: total, bear: total * 0.70, bull: total * 1.35 };
+        }
+
+        function calculateFreightSimple(revenue) {
+            const freightVolume = parseFloat(document.getElementById('freightVolume').value) || 0;
+            const auditCoverage = (parseFloat(document.getElementById('freightAuditCoverage').value) || 0) / 100;
+            const overchargeRate = (parseFloat(document.getElementById('freightOverchargeRate').value) || 0) / 100;
+            const recoveryRate = (parseFloat(document.getElementById('freightRecoveryRate').value) || 0) / 100;
+
+            const total = freightVolume * 1000000 * auditCoverage * overchargeRate * recoveryRate;
+
+            return { base: total, bear: total * 0.65, bull: total * 1.40 };
+        }
+
+        function calculateReceivablesSimple(revenue) {
+            const deductionRate = (parseFloat(document.getElementById('recDeductionRate').value) || 0) / 100;
+            const currentRecovery = (parseFloat(document.getElementById('recCurrentRecovery').value) || 0) / 100;
+            const targetCapture = (parseFloat(document.getElementById('recTargetCapture').value) || 0) / 100;
+            const prevention = (parseFloat(document.getElementById('recPrevention').value) || 0) / 100;
+
+            const deductions = revenue * deductionRate * 1000000;
+            const unrecovered = deductions * (1 - currentRecovery);
+            const preventionAmount = deductions * prevention;
+            const incrementalRecovery = unrecovered * targetCapture;
+            const total = incrementalRecovery + preventionAmount;
+
+            return { base: total, bear: total * 0.65, bull: total * 1.55 };
+        }
+
+        // ===== ADVANCED MODE CALCULATIONS =====
+        function calculateAPAdvanced(revenue) {
+            const apVolume = parseFloat(document.getElementById('advApVolume').value) || 0;
+            let total = 0;
+
+            // 3-way match
+            const matchRate = (parseFloat(document.getElementById('advAp3wayFailure').value) || 0) / 100;
+            const matchAmount = parseFloat(document.getElementById('advAp3wayAmount').value) || 0;
+            const matchRecovery = (parseFloat(document.getElementById('advAp3wayRecovery').value) || 0) / 100;
+            const matchCount = (apVolume * 1000000 / matchAmount * matchRate);
+            total += matchCount * matchAmount * matchRecovery;
+
+            // Duplicates
+            const dupRate = (parseFloat(document.getElementById('advApDupRate').value) || 0) / 100;
+            const dupAmount = parseFloat(document.getElementById('advApDupAmount').value) || 0;
+            const dupRecovery = (parseFloat(document.getElementById('advApDupRecovery').value) || 0) / 100;
+            const dupCount = (apVolume * 1000000 / dupAmount * dupRate);
+            total += dupCount * dupAmount * dupRecovery;
+
+            // Fraud
+            const fraudRate = (parseFloat(document.getElementById('advApFraudRate').value) || 0) / 100;
+            const fraudAmount = parseFloat(document.getElementById('advApFraudAmount').value) || 0;
+            const fraudRecovery = (parseFloat(document.getElementById('advApFraudRecovery').value) || 0) / 100;
+            const fraudCount = (apVolume * 1000000 / fraudAmount * fraudRate);
+            total += fraudCount * fraudAmount * fraudRecovery;
+
+            // Credits
+            const monthlyCredit = (parseFloat(document.getElementById('advApCreditMonthly').value) || 0) * 1000;
+            const creditNotApplied = (parseFloat(document.getElementById('advApCreditNotApplied').value) || 0) / 100;
+            const creditRecovery = (parseFloat(document.getElementById('advApCreditRecovery').value) || 0) / 100;
+            total += monthlyCredit * 12 * creditNotApplied * creditRecovery;
+
+            // Early payment discounts
+            const discountRate = (parseFloat(document.getElementById('advApDiscountRate').value) || 0) / 100;
+            const discountEligible = (parseFloat(document.getElementById('advApDiscountEligible').value) || 0) / 100;
+            const discountCapture = (parseFloat(document.getElementById('advApDiscountCapture').value) || 0) / 100;
+            const discountPotential = apVolume * 1000000 * discountEligible * discountRate;
+            total += discountPotential * (1 - discountCapture);
+
+            return { base: total, bear: total * 0.70, bull: total * 1.35 };
+        }
+
+        function calculateFreightAdvanced(revenue) {
+            const freightVolume = parseFloat(document.getElementById('advFreightVolume').value) || 0;
+            let total = 0;
+
+            // Weight/Zone
+            const auditablePct = (parseFloat(document.getElementById('advFreightAuditablePct').value) || 0) / 100;
+            const misclassRate = (parseFloat(document.getElementById('advFreightMisclassRate').value) || 0) / 100;
+            const misclassAvg = parseFloat(document.getElementById('advFreightMisclassAvg').value) || 0;
+            const auditedShips = freightVolume * 1000000 / 500 * auditablePct;
+            total += auditedShips * misclassRate * misclassAvg;
+
+            // Accessorials
+            const accessPct = (parseFloat(document.getElementById('advFreightAccessPct').value) || 0) / 100;
+            const accessInvalid = (parseFloat(document.getElementById('advFreightAccessInvalid').value) || 0) / 100;
+            const accessAvg = parseFloat(document.getElementById('advFreightAccessAvg').value) || 0;
+            total += auditedShips * accessPct * accessInvalid * accessAvg;
+
+            // Rate non-compliance
+            const rateCompliance = (parseFloat(document.getElementById('advFreightRateCompliance').value) || 0) / 100;
+            const rateOvercharge = (parseFloat(document.getElementById('advFreightRateOvercharge').value) || 0) / 100;
+            const rateRecovery = (parseFloat(document.getElementById('advFreightRateRecovery').value) || 0) / 100;
+            const complianceGap = 1 - rateCompliance;
+            total += freightVolume * 1000000 * complianceGap * rateOvercharge * rateRecovery;
+
+            // Claims
+            const claimRate = (parseFloat(document.getElementById('advFreightClaimRate').value) || 0) / 100;
+            const claimAvg = parseFloat(document.getElementById('advFreightClaimAvg').value) || 0;
+            const claimApproval = (parseFloat(document.getElementById('advFreightClaimApproval').value) || 0) / 100;
+            const claimShips = freightVolume * 1000000 / 500;
+            total += claimShips * claimRate * claimAvg * claimApproval;
+
+            return { base: total, bear: total * 0.65, bull: total * 1.40 };
+        }
+
+        function calculateReceivablesAdvanced(revenue) {
+            const baseRevenue = revenue;
+            let total = 0;
+
+            // Promotional
+            const promoRate = (parseFloat(document.getElementById('advRecPromoRate').value) || 0) / 100;
+            const promoValid = (parseFloat(document.getElementById('advRecPromoValid').value) || 0) / 100;
+            const promoRecovery = (parseFloat(document.getElementById('advRecPromoRecovery').value) || 0) / 100;
+            const promoGain = baseRevenue * 1000000 * promoRate * promoValid * (1 - promoRecovery);
+
+            // Quality
+            const qualityRate = (parseFloat(document.getElementById('advRecQualityRate').value) || 0) / 100;
+            const qualityValid = (parseFloat(document.getElementById('advRecQualityValid').value) || 0) / 100;
+            const qualityRecovery = (parseFloat(document.getElementById('advRecQualityRecovery').value) || 0) / 100;
+            const qualityGain = baseRevenue * 1000000 * qualityRate * qualityValid * (1 - qualityRecovery);
+
+            // Short
+            const shortRate = (parseFloat(document.getElementById('advRecShortRate').value) || 0) / 100;
+            const shortValid = (parseFloat(document.getElementById('advRecShortValid').value) || 0) / 100;
+            const shortRecovery = (parseFloat(document.getElementById('advRecShortRecovery').value) || 0) / 100;
+            const shortGain = baseRevenue * 1000000 * shortRate * shortValid * (1 - shortRecovery);
+
+            // Pricing
+            const pricingRate = (parseFloat(document.getElementById('advRecPricingRate').value) || 0) / 100;
+            const pricingValid = (parseFloat(document.getElementById('advRecPricingValid').value) || 0) / 100;
+            const pricingRecovery = (parseFloat(document.getElementById('advRecPricingRecovery').value) || 0) / 100;
+            const pricingGain = baseRevenue * 1000000 * pricingRate * pricingValid * (1 - pricingRecovery);
+
+            // Returns
+            const returnRate = (parseFloat(document.getElementById('advRecReturnRate').value) || 0) / 100;
+            const returnRecovery = (parseFloat(document.getElementById('advRecReturnRecovery').value) || 0) / 100;
+            const returnGain = baseRevenue * 1000000 * returnRate * (1 - returnRecovery);
+
+            const totalLost = promoGain + qualityGain + shortGain + pricingGain + returnGain;
+            const targetCapture = (parseFloat(document.getElementById('advRecTargetCapture').value) || 0) / 100;
+            const prevention = (parseFloat(document.getElementById('advRecPrevention').value) || 0) / 100;
+
+            const preventionAmount = totalLost * prevention;
+            const incrementalRecovery = totalLost * targetCapture;
+            total = incrementalRecovery + preventionAmount;
+
+            return { base: total, bear: total * 0.65, bull: total * 1.55 };
+        }
+
+        function updateDisplay(baseTotal, bearTotal, bullTotal, size, revenue, ap, freight, rec) {
+            document.getElementById('baseTotal').textContent = '$' + formatNumber(baseTotal);
+            document.getElementById('bearTotal').textContent = '$' + formatNumber(bearTotal);
+            document.getElementById('bullTotal').textContent = '$' + formatNumber(bullTotal);
+
+            let breakdown = '';
+            if (ap.base > 0) breakdown += `AP: $${formatNumber(ap.base)}\n`;
+            if (freight.base > 0) breakdown += `Freight: $${formatNumber(freight.base)}\n`;
+            if (rec.base > 0) breakdown += `Receivables: $${formatNumber(rec.base)}`;
+
+            document.getElementById('baseBreakdown').innerHTML = breakdown.replace(/\n/g, '<div class="process-detail">');
+
+            document.getElementById('recoveryPercent').textContent = ((baseTotal / (revenue * 1000000)) * 100).toFixed(2) + '%';
+            document.getElementById('recoveryPerEmployee').textContent = '$' + formatNumber(Math.round(baseTotal / size));
+            const paybackMonths = baseTotal > 0 ? Math.ceil((80000 * 12) / baseTotal) : 0;
+            document.getElementById('paybackMonths').textContent = paybackMonths + ' mo';
+
+            const dsoField = document.getElementById(isAdvancedMode ? 'advRecTimeReduction' : 'recTimeReduction');
+            const dsoValue = Math.round((parseFloat(dsoField ? dsoField.value : 0) || 0) / 10);
+            document.getElementById('dsoImpact').textContent = '-' + dsoValue + ' days';
+        }
+
+        function formatNumber(num) {
+            // Format large numbers as M (millions), K (thousands)
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K';
+            } else {
+                return num.toFixed(0);
+            }
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('confirmCompany').value = document.getElementById('companyName').value;
+            document.getElementById('downloadModal').classList.add('show');
+        });
+
+        function numVal(id) {
+            const el = document.getElementById(id);
+            return el ? parseFloat(el.value) : undefined;
+        }
+
+        document.getElementById('downloadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('downloadLoading').classList.add('show');
+            document.getElementById('downloadForm').style.display = 'none';
+
+            const formData = {
+                company_name: document.getElementById('companyName').value,
+                revenue_m: parseFloat(document.getElementById('revenue').value),
+                company_size: parseInt(document.getElementById('companySize').value),
+                industry: document.getElementById('industry').value,
+                region: document.getElementById('region').value,
+                verticals: ['ap', 'freight', 'receivables'],
+                mode: isAdvancedMode ? 'advanced' : 'simple',
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                company: document.getElementById('confirmCompany').value
+            };
+
+            if (isAdvancedMode) {
+                Object.assign(formData, {
+                    ap_volume: numVal('advApVolume'),
+                    ap_3way_failure: numVal('advAp3wayFailure'),
+                    ap_3way_amount: numVal('advAp3wayAmount'),
+                    ap_3way_recovery: numVal('advAp3wayRecovery'),
+                    ap_dup_rate: numVal('advApDupRate'),
+                    ap_dup_amount: numVal('advApDupAmount'),
+                    ap_dup_recovery: numVal('advApDupRecovery'),
+                    ap_fraud_rate: numVal('advApFraudRate'),
+                    ap_fraud_amount: numVal('advApFraudAmount'),
+                    ap_fraud_recovery: numVal('advApFraudRecovery'),
+                    ap_credit_monthly: numVal('advApCreditMonthly'),
+                    ap_credit_not_applied: numVal('advApCreditNotApplied'),
+                    ap_credit_recovery: numVal('advApCreditRecovery'),
+                    ap_discount_rate: numVal('advApDiscountRate'),
+                    ap_discount_eligible: numVal('advApDiscountEligible'),
+                    ap_discount_capture: numVal('advApDiscountCapture'),
+
+                    freight_volume: numVal('advFreightVolume'),
+                    freight_auditable_pct: numVal('advFreightAuditablePct'),
+                    freight_misclass_rate: numVal('advFreightMisclassRate'),
+                    freight_misclass_avg: numVal('advFreightMisclassAvg'),
+                    freight_access_pct: numVal('advFreightAccessPct'),
+                    freight_access_invalid: numVal('advFreightAccessInvalid'),
+                    freight_access_avg: numVal('advFreightAccessAvg'),
+                    freight_rate_compliance: numVal('advFreightRateCompliance'),
+                    freight_rate_overcharge: numVal('advFreightRateOvercharge'),
+                    freight_rate_recovery: numVal('advFreightRateRecovery'),
+                    freight_claim_rate: numVal('advFreightClaimRate'),
+                    freight_claim_avg: numVal('advFreightClaimAvg'),
+                    freight_claim_approval: numVal('advFreightClaimApproval'),
+
+                    rec_promo_rate: numVal('advRecPromoRate'),
+                    rec_promo_valid: numVal('advRecPromoValid'),
+                    rec_promo_recovery: numVal('advRecPromoRecovery'),
+                    rec_quality_rate: numVal('advRecQualityRate'),
+                    rec_quality_valid: numVal('advRecQualityValid'),
+                    rec_quality_recovery: numVal('advRecQualityRecovery'),
+                    rec_short_rate: numVal('advRecShortRate'),
+                    rec_short_valid: numVal('advRecShortValid'),
+                    rec_short_recovery: numVal('advRecShortRecovery'),
+                    rec_pricing_rate: numVal('advRecPricingRate'),
+                    rec_pricing_valid: numVal('advRecPricingValid'),
+                    rec_pricing_recovery: numVal('advRecPricingRecovery'),
+                    rec_return_rate: numVal('advRecReturnRate'),
+                    rec_return_recovery: numVal('advRecReturnRecovery'),
+                    rec_target_capture: numVal('advRecTargetCapture'),
+                    rec_prevention: numVal('advRecPrevention')
+                });
+            } else {
+                Object.assign(formData, {
+                    ap_volume: numVal('apVolume'),
+                    ap_problem_ratio: numVal('apProblemRatio'),
+                    ap_issue_amount: numVal('apIssueAmount'),
+                    ap_recovery_rate: numVal('apRecoveryRate'),
+
+                    freight_volume: numVal('freightVolume'),
+                    freight_audit_coverage: numVal('freightAuditCoverage'),
+                    freight_overcharge_rate: numVal('freightOverchargeRate'),
+                    freight_recovery_rate: numVal('freightRecoveryRate'),
+
+                    rec_deduction_rate: numVal('recDeductionRate'),
+                    rec_current_recovery: numVal('recCurrentRecovery'),
+                    rec_target_capture: numVal('recTargetCapture'),
+                    rec_prevention: numVal('recPrevention')
+                });
+            }
+
+            fetch('/api/generate-roi-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `CFO_ROI_${isAdvancedMode ? 'Advanced' : 'Simple'}_${formData.company_name.replace(/\s+/g, '_')}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                setTimeout(closeDownloadModal, 1500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('downloadLoading').classList.remove('show');
+                document.getElementById('downloadForm').style.display = 'block';
+                alert('Error generating report.');
+            });
+        });
+
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').classList.remove('show');
+            document.getElementById('downloadForm').style.display = 'block';
+            document.getElementById('downloadLoading').classList.remove('show');
+            document.getElementById('downloadForm').reset();
+        }
+
+        function resetForm() {
+            form.reset();
+            calculateAll();
+        }
+
+        calculateAll();
+    </script>
+
+    <!-- AUTO-APPLY & ASSUMPTIONS SYSTEM -->
+    <style>
+        .assumptions-ref-btn {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: var(--cs-purple);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(109, 57, 255, 0.25);
+            z-index: 1900;
+            transition: all 0.3s;
+        }
+
+        .assumptions-ref-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(109, 57, 255, 0.3);
+        }
+
+        .assumptions-ref-btn--inline {
+            position: static;
+            top: auto;
+            right: auto;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin: 14px 0 0 0;
+        }
+
+        .assumptions-modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .assumptions-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .assumptions-modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 95%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .assumptions-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            background: var(--cs-purple);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .assumptions-modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .assumptions-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+        }
+
+        .assumptions-modal-body {
+            padding: 32px;
+        }
+
+        .assumption-section {
+            margin-bottom: 40px;
+        }
+
+        .assumption-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--cs-purple);
+        }
+
+        .assumption-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .assumption-table thead {
+            background: var(--cs-offwhite-bright);
+            border-bottom: 2px solid var(--cs-purple);
+        }
+
+        .assumption-table th {
+            padding: 14px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--cs-purple);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .assumption-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .assumption-table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .assumption-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .assumption-source {
+            background: var(--cs-offwhite-bright);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid var(--cs-purple);
+        }
+
+        .assumption-source-title {
+            font-weight: 700;
+            color: var(--cs-purple);
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .assumption-source-text {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .auto-filled {
+            background-color: #f0f4f9 !important;
+            border: 1.5px solid #c0d0e0 !important;
+        }
+
+        @media (max-width: 768px) {
+            .assumptions-ref-btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .assumptions-modal-content {
+                width: 98%;
+                max-height: 95vh;
+            }
+
+            .assumptions-modal-body {
+                padding: 20px;
+            }
+
+            .assumption-table {
+                font-size: 12px;
+            }
+
+            .assumption-table th,
+            .assumption-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+
+    <div class="assumptions-modal" id="assumptionsModal">
+        <div class="assumptions-modal-content">
+            <div class="assumptions-modal-header">
+                <h2>Default Assumptions Reference</h2>
+                <button class="assumptions-modal-close" onclick="closeAssumptionsReference()">&times;</button>
+            </div>
+            <div class="assumptions-modal-body" id="assumptionsModalBody"></div>
+        </div>
+    </div>
+
+    <div class="assumptions-modal" id="methodologyModal">
+        <div class="assumptions-modal-content">
+            <div class="assumptions-modal-header">
+                <h2>Calculation Formulas &amp; Methodology</h2>
+                <button class="assumptions-modal-close" onclick="closeMethodologyReference()">&times;</button>
+            </div>
+            <div class="assumptions-modal-body" id="methodologyModalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const assumptionsData = {
+            "Manufacturing": {"apVolume_percent": 0.45, "apProblemRatio": 3.2, "apIssueAmount": 3500, "apRecoveryRate": 78, "freightVolume_percent": 0.08, "freightAuditCoverage": 72, "freightOverchargeRate": 18, "freightRecoveryRate": 72, "recDeductionRate": 1.2, "recCurrentRecovery": 42, "source": "NACM Manufacturing Industry Report, APICS Supply Chain Benchmarks"},
+            "Retail": {"apVolume_percent": 0.50, "apProblemRatio": 3.8, "apIssueAmount": 2800, "apRecoveryRate": 75, "freightVolume_percent": 0.06, "freightAuditCoverage": 65, "freightOverchargeRate": 16, "freightRecoveryRate": 68, "recDeductionRate": 2.5, "recCurrentRecovery": 35, "source": "National Retail Federation"},
+            "Healthcare": {"apVolume_percent": 0.40, "apProblemRatio": 2.5, "apIssueAmount": 4200, "apRecoveryRate": 82, "freightVolume_percent": 0.04, "freightAuditCoverage": 78, "freightOverchargeRate": 12, "freightRecoveryRate": 75, "recDeductionRate": 0.8, "recCurrentRecovery": 48, "source": "HFMA Healthcare Financial Management Association"},
+            "Technology": {"apVolume_percent": 0.35, "apProblemRatio": 2.0, "apIssueAmount": 5500, "apRecoveryRate": 85, "freightVolume_percent": 0.03, "freightAuditCoverage": 85, "freightOverchargeRate": 10, "freightRecoveryRate": 78, "recDeductionRate": 0.5, "recCurrentRecovery": 55, "source": "BSA Software Industry Financial Benchmarks"},
+            "Financial Services": {"apVolume_percent": 0.30, "apProblemRatio": 1.8, "apIssueAmount": 6000, "apRecoveryRate": 80, "freightVolume_percent": 0.01, "freightAuditCoverage": 60, "freightOverchargeRate": 9, "freightRecoveryRate": 70, "recDeductionRate": 0.6, "recCurrentRecovery": 50, "source": "Illustrative estimate \u2014 no single named industry benchmark; freight is minimal for this sector"},
+            "General / Other": {"apVolume_percent": 0.43, "apProblemRatio": 2.8, "apIssueAmount": 4000, "apRecoveryRate": 78, "freightVolume_percent": 0.05, "freightAuditCoverage": 72, "freightOverchargeRate": 13, "freightRecoveryRate": 73, "recDeductionRate": 1.1, "recCurrentRecovery": 46, "source": "Blended average across the other listed industry categories"}
+        };
+
+        // Maps the <select id="industry"> option values (lowercase codes) to the
+        // benchmark preset keys above. These previously didn't match at all, so
+        // every industry silently fell back to the Manufacturing preset.
+        const industryKeyMap = {
+            'manufacturing': 'Manufacturing',
+            'retail': 'Retail',
+            'pharma': 'Healthcare',
+            'tech': 'Technology',
+            'financial': 'Financial Services',
+            'general': 'General / Other'
+        };
+
+        let autoFilledFields = new Set();
+
+        function autoApplyDefaults() {
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const industry = document.getElementById('industry').value;
+
+            if (!revenue || revenue <= 0 || !industry) return;
+
+            const industryData = assumptionsData[industryKeyMap[industry]] || assumptionsData['Manufacturing'];
+
+            setAutoFilledField('apVolume', (revenue * industryData.apVolume_percent).toFixed(1));
+            setAutoFilledField('apProblemRatio', industryData.apProblemRatio.toFixed(1));
+            setAutoFilledField('apIssueAmount', industryData.apIssueAmount.toFixed(0));
+            setAutoFilledField('apRecoveryRate', industryData.apRecoveryRate.toFixed(0));
+            setAutoFilledField('freightVolume', (revenue * industryData.freightVolume_percent).toFixed(1));
+            setAutoFilledField('freightAuditCoverage', industryData.freightAuditCoverage.toFixed(0));
+            setAutoFilledField('freightOverchargeRate', industryData.freightOverchargeRate.toFixed(0));
+            setAutoFilledField('freightRecoveryRate', industryData.freightRecoveryRate.toFixed(0));
+            setAutoFilledField('recDeductionRate', industryData.recDeductionRate.toFixed(1));
+            setAutoFilledField('recCurrentRecovery', industryData.recCurrentRecovery.toFixed(0));
+            setAutoFilledField('recTargetCapture', '60');
+            setAutoFilledField('recPrevention', '25');
+
+            if (typeof calculateTotals === 'function') {
+                calculateTotals();
+            }
+        }
+
+        function setAutoFilledField(fieldId, value) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = value;
+                field.classList.add('auto-filled');
+                autoFilledFields.add(fieldId);
+            }
+        }
+
+        function openAssumptionsReference() {
+            generateAssumptionsContent();
+            document.getElementById('assumptionsModal').classList.add('show');
+        }
+
+        function closeAssumptionsReference() {
+            document.getElementById('assumptionsModal').classList.remove('show');
+        }
+
+        function openMethodologyReference() {
+            generateMethodologyContent();
+            document.getElementById('methodologyModal').classList.add('show');
+        }
+
+        function closeMethodologyReference() {
+            document.getElementById('methodologyModal').classList.remove('show');
+        }
+
+        function generateMethodologyContent() {
+            let html = '';
+
+            function section(title, rows) {
+                let s = '<div class="assumption-section">';
+                s += '<h3 class="assumption-section-title">' + title + '</h3>';
+                s += '<table class="assumption-table"><thead><tr><th>Step</th><th>Formula</th></tr></thead><tbody>';
+                rows.forEach(function(r) {
+                    s += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+                });
+                s += '</tbody></table></div>';
+                return s;
+            }
+
+            html += '<div class="assumption-section"><h3 class="assumption-section-title">All Modes</h3>';
+            html += '<p style="font-size:12px;color:var(--gray-500);line-height:1.6;">Every category below produces a Base Case dollar figure. ';
+            html += 'Bear and Bull cases apply a fixed multiplier to that Base figure, set per process area: ';
+            html += 'AP &times;0.70 / &times;1.35, Freight &times;0.65 / &times;1.40, Receivables &times;0.65 / &times;1.55. ';
+            html += 'The three process totals (AP + Freight + Receivables) are simply summed for the overall Bear/Base/Bull figures shown in the sidebar.</p></div>';
+
+            html += '<div class="assumption-section"><h3 class="assumption-section-title">SIMPLE MODE</h3></div>';
+
+            html += section('Accounts Payable (Simple)', [
+                ['Issue Count', 'AP Volume ($M) &times; 1,000,000 &divide; Avg Issue Amount &times; Problem Ratio %'],
+                ['Recovery Potential', 'Issue Count &times; Avg Issue Amount &times; Recovery Rate %']
+            ]);
+
+            html += section('Freight Audit (Simple)', [
+                ['Recovery Potential', 'Freight Volume ($M) &times; 1,000,000 &times; Audit Coverage % &times; Overcharge Rate % &times; Recovery Rate %']
+            ]);
+
+            html += section('Receivables &amp; Deductions (Simple)', [
+                ['Total Deductions', 'Revenue ($M) &times; 1,000,000 &times; Deduction Rate %'],
+                ['Unrecovered (Opportunity)', 'Total Deductions &times; (1 &minus; Current Recovery %)'],
+                ['Prevention Amount', 'Total Deductions &times; Prevention %  <span style="color:var(--gray-400)">(prevention applies to total deductions, not just the unrecovered portion)</span>'],
+                ['Recovery Potential', 'Unrecovered &times; Target Capture Rate %  +  Prevention Amount']
+            ]);
+
+            html += '<div class="assumption-section"><h3 class="assumption-section-title">ADVANCED MODE</h3></div>';
+
+            html += section('Accounts Payable (Advanced) &mdash; sum of 5 categories', [
+                ['3-Way Match Failures', '(AP Volume &times; 1,000,000 &divide; Avg Amount &times; Failure Rate %) &times; Avg Amount &times; Recovery Rate %'],
+                ['Duplicate Payments', 'Same pattern, using Duplicate Rate / Avg Amount / Recovery Rate'],
+                ['Fraud &amp; Unauthorized', 'Same pattern, using Fraud Rate / Avg Amount / Recovery Rate'],
+                ['Missed Credits', 'Monthly Credits ($K) &times; 1,000 &times; 12 &times; Not-Applied % &times; Recovery Rate %'],
+                ['Early Payment Discounts', '(AP Volume &times; 1,000,000 &times; Eligible % &times; Discount %) &times; (1 &minus; Current Capture %)'],
+                ['Total', 'Sum of all 5 categories above']
+            ]);
+
+            html += section('Freight Audit (Advanced) &mdash; sum of 4 categories', [
+                ['Audited Shipments (shared)', 'Freight Volume &times; 1,000,000 &divide; $500 avg shipment value &times; Auditable %'],
+                ['Weight &amp; Zone Misclassification', 'Audited Shipments &times; Misclassification Rate % &times; Avg Overcharge $'],
+                ['Accessorial Charges', 'Audited Shipments &times; % w/ Accessorials &times; Invalid Rate % &times; Avg Amount $'],
+                ['Rate Non-Compliance', 'Freight Volume &times; 1,000,000 &times; (1 &minus; Rate Compliance %) &times; Overcharge Rate % &times; Recovery Rate % &nbsp;<span style="color:var(--gray-400)">(uses total volume, not the audited-shipment subset)</span>'],
+                ['Claims (Loss/Damage)', '(Freight Volume &times; 1,000,000 &divide; $500) &times; Claim Rate % &times; Avg Claim $ &times; Approval Rate % &nbsp;<span style="color:var(--gray-400)">(applies to all shipments, not just auditable ones)</span>'],
+                ['Total', 'Sum of all 4 categories above']
+            ]);
+
+            html += section('Receivables &amp; Deductions (Advanced) &mdash; sum of 5 categories, then adjusted', [
+                ['Per-category Unrecovered Amount', 'Revenue &times; 1,000,000 &times; Deduction Rate % &times; Valid % &times; (1 &minus; Current Recovery %) &nbsp;<span style="color:var(--gray-400)">(Returns category has no Valid % factor)</span>'],
+                ['Categories', 'Promotional, Quality/Damage, Short Qty/Missing, Pricing Disputes, Authorized Returns'],
+                ['Total Unrecovered', 'Sum of all 5 categories&rsquo; unrecovered amounts'],
+                ['Incremental Recovery', 'Total Unrecovered &times; Target Capture Rate %'],
+                ['Prevention Amount', 'Total Unrecovered &times; Prevention %'],
+                ['Total', 'Incremental Recovery + Prevention Amount']
+            ]);
+
+            html += '<div class="assumption-section"><h3 class="assumption-section-title">Key Metrics</h3>';
+            html += '<table class="assumption-table"><thead><tr><th>Metric</th><th>Formula</th></tr></thead><tbody>';
+            html += '<tr><td>Recovery / Revenue</td><td>Base Case Total &divide; (Revenue $M &times; 1,000,000)</td></tr>';
+            html += '<tr><td>Recovery / Employee</td><td>Base Case Total &divide; Company Size</td></tr>';
+            html += '<tr><td>Payback (1 FTE)</td><td>($80,000 &times; 12) &divide; Base Case Total, in months &nbsp;<span style="color:var(--gray-400)">($80K is a fixed assumption, not a form input</span>)</td></tr>';
+            html += '</tbody></table></div>';
+
+            document.getElementById('methodologyModalBody').innerHTML = html;
+        }
+
+        function generateAssumptionsContent() {
+            let html = '';
+
+            function formatPercent(value) {
+                return parseFloat((value * 100).toFixed(1));
+            }
+
+            html += '<div class="assumption-section">';
+            html += '<h3 class="assumption-section-title">Industry Defaults by Category</h3>';
+            html += '<table class="assumption-table"><thead><tr>';
+            html += '<th>Industry</th><th>AP Volume %</th><th>Problem Rate</th><th>Freight %</th><th>Deduction Rate</th><th>Current Recovery</th>';
+            html += '</tr></thead><tbody>';
+
+            for (const [industry, data] of Object.entries(assumptionsData)) {
+                html += '<tr>';
+                html += '<td><strong>' + industry + '</strong></td>';
+                html += '<td>' + formatPercent(data.apVolume_percent) + '%</td>';
+                html += '<td>' + data.apProblemRatio + '%</td>';
+                html += '<td>' + formatPercent(data.freightVolume_percent) + '%</td>';
+                html += '<td>' + data.recDeductionRate + '%</td>';
+                html += '<td>' + data.recCurrentRecovery + '%</td>';
+                html += '</tr>';
+            }
+
+            html += '</tbody></table></div>';
+
+            for (const [industry, data] of Object.entries(assumptionsData)) {
+                html += '<div class="assumption-section">';
+                html += '<h3 class="assumption-section-title">' + industry + ' Industry</h3>';
+                html += '<table class="assumption-table"><thead><tr>';
+                html += '<th>Metric</th><th>Value</th><th>Calculation</th>';
+                html += '</tr></thead><tbody>';
+
+                html += '<tr><td>AP Volume</td><td>' + formatPercent(data.apVolume_percent) + '% of Revenue</td><td>Revenue × ' + formatPercent(data.apVolume_percent) + '%</td></tr>';
+                html += '<tr><td>Problem Rate</td><td>' + data.apProblemRatio + '%</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Avg Issue Amount</td><td>$' + data.apIssueAmount.toLocaleString() + '</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>AP Recovery Rate</td><td>' + data.apRecoveryRate + '%</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Freight Volume</td><td>' + formatPercent(data.freightVolume_percent) + '% of Revenue</td><td>Revenue × ' + formatPercent(data.freightVolume_percent) + '%</td></tr>';
+                html += '<tr><td>Audit Coverage</td><td>' + data.freightAuditCoverage + '%</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Overcharge Rate</td><td>' + data.freightOverchargeRate + '%</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Freight Recovery Rate</td><td>' + data.freightRecoveryRate + '%</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Deduction Rate</td><td>' + data.recDeductionRate + '% of Revenue</td><td>Industry Benchmark</td></tr>';
+                html += '<tr><td>Current Recovery Rate</td><td>' + data.recCurrentRecovery + '%</td><td>Industry Benchmark</td></tr>';
+
+                html += '</tbody></table>';
+                html += '<div class="assumption-source">';
+                html += '<div class="assumption-source-title">Source</div>';
+                html += '<div class="assumption-source-text">' + data.source + '</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+
+            document.getElementById('assumptionsModalBody').innerHTML = html;
+        }
+
+        document.getElementById('assumptionsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAssumptionsReference();
+        });
+
+        document.getElementById('methodologyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeMethodologyReference();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const triggerFields = ['revenue', 'industry', 'companySize', 'region'];
+            triggerFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('change', autoApplyDefaults);
+                    field.addEventListener('blur', autoApplyDefaults);
+                    field.addEventListener('input', autoApplyDefaults);
+                }
+            });
+
+            const editableFields = Array.from(document.querySelectorAll('input[type="number"], input[type="text"]'));
+            editableFields.forEach(field => {
+                field.addEventListener('focus', function() {
+                    if (autoFilledFields.has(this.id)) {
+                        this.classList.remove('auto-filled');
+                        autoFilledFields.delete(this.id);
+                    }
+                });
+
+                field.addEventListener('input', function() {
+                    if (autoFilledFields.has(this.id)) {
+                        this.classList.remove('auto-filled');
+                        autoFilledFields.delete(this.id);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Brand layer: typography and states, per the cloudsquid client deck -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&display=swap');
+
+        /* Display face for headings and figures: tight, heavy, set close —
+           the way the deck sets "Finance no longer has to choose". Body copy
+           stays in Inter. */
+        header h1,
+        .scenario-amount,
+        .metric-value,
+        .modal-header h2,
+        .assumptions-modal-header h2,
+        .assumption-section-title {
+            font-family: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            color: var(--cs-ink);
+        }
+
+        header h1 {
+            font-size: 30px;
+            line-height: 1.15;
+        }
+
+        /* Every kicker in the deck is uppercase, tracked wide, and small. */
+        header p,
+        .summary-headline,
+        .scenario-label,
+        .metric-label,
+        .assumption-table th,
+        .assumption-source-title,
+        .toggle-label {
+            text-transform: uppercase;
+            letter-spacing: 1.3px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 10.5px;
+            color: var(--cs-purple);
+        }
+
+        /* Figures hold their column so amounts stop shifting sideways while an
+           assumption is being edited. */
+        .scenario-amount,
+        .metric-value,
+        .form-group input[type="number"],
+        .assumption-table td {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .scenario-amount {
+            font-size: 22px;
+        }
+
+        .scenario-label { color: var(--gray-500); }
+
+        /* Yours to fill in: white, with the accent rule the deck uses on every
+           callout. Carried in from the benchmarks: lavender, same rule, so the
+           two states are told apart by fill rather than by a second colour. */
+        .form-group input[type="number"] {
+            background: #fff;
+            border-left: 2px solid var(--cs-purple);
+        }
+
+        .auto-filled,
+        .form-group input[type="number"].auto-filled {
+            background: var(--cs-purple-tint) !important;
+            border: 1px solid var(--gray-300) !important;
+            border-left: 2px solid var(--cs-purple) !important;
+            color: var(--gray-700);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--cs-purple);
+            box-shadow: 0 0 0 3px var(--cs-purple-ring);
+        }
+
+        .tooltip-icon {
+            background-color: transparent;
+            color: var(--cs-purple);
+            border: 1px solid var(--gray-300);
+            border-radius: 2px;
+            font-weight: 700;
+        }
+
+        .tooltip-icon:hover {
+            background-color: var(--cs-purple);
+            border-color: var(--cs-purple);
+            color: #fff;
+        }
+
+        .tooltip-icon:hover::after {
+            border-radius: 0;
+            background-color: var(--cs-ink);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cs-ink);
+            color: #fff;
+        }
+
+        /* Assumptions reference, held to the same system */
+        .assumptions-ref-btn {
+            background: var(--cs-ink) !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            padding: 11px 16px;
+            top: 24px;
+        }
+
+        .assumptions-ref-btn:hover {
+            background: var(--cs-purple) !important;
+            transform: none;
+        }
+
+        .assumptions-modal { background: rgba(33, 28, 60, 0.55); }
+
+        .assumptions-modal-content {
+            border-radius: 0;
+            border: 1px solid var(--cs-border);
+            box-shadow: none;
+        }
+
+        .assumptions-modal-header {
+            background: var(--cs-ink);
+            border-radius: 0;
+            border-bottom: 3px solid var(--cs-purple);
+        }
+
+        .assumptions-modal-header h2 { color: #fff; }
+
+        .assumption-section-title {
+            font-size: 17px;
+            border-bottom: none;
+            border-top: 3px solid var(--cs-purple);
+            padding-top: 12px;
+            padding-bottom: 0;
+            margin-bottom: 16px;
+        }
+
+        .assumption-section:nth-of-type(3n+2) .assumption-section-title { border-top-color: var(--cs-orchid); }
+        .assumption-section:nth-of-type(3n)   .assumption-section-title { border-top-color: var(--cs-olive); }
+
+        .assumption-table {
+            border-radius: 0;
+            border: 1px solid var(--cs-border);
+        }
+
+        .assumption-table thead {
+            background: var(--cs-offwhite);
+            border-bottom: 1px solid var(--cs-border);
+        }
+
+        .assumption-table th {
+            font-size: 10px;
+            color: var(--gray-500);
+        }
+
+        .assumption-source {
+            background: var(--cs-olive-tint);
+            border-radius: 0;
+            border-left: 3px solid var(--cs-olive);
+        }
+
+        .assumption-source-title {
+            font-size: 10px;
+            color: var(--cs-ink);
+        }
+
+        /* Quality floor */
+        :focus-visible {
+            outline: 2px solid var(--cs-purple);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            body { background-image: none; }
+        }
+    </style>
+</body>
+</html>
