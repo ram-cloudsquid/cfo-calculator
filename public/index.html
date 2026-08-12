@@ -685,6 +685,10 @@
                 <strong>Simple Mode</strong> (2 min) uses industry benchmarks. <strong>Advanced Mode</strong> (5 min) uses your numbers. Both deliver a Bear/Base/Bull estimate + downloadable Excel model.
             </p>
 
+            <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-bottom: 20px;">
+                <em>Note: CloudSquid's 80% touchless rate is used as benchmark for AI Capture Rate</em>
+            </p>
+
             <!-- Mode Toggle -->
             <div class="mode-selector">
                 <div class="toggle-container">
@@ -809,6 +813,10 @@
                                     <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of identified issues you can successfully recover"></span></span></label>
                                     <input type="number" id="apRecoveryRate" step="1" value="70" placeholder="70">
                                 </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Spent on AP Issues (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on AP issue resolution? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="apTimeSpent" step="1" value="10" placeholder="10">
+                                </div>
                             </div>
                         </div>
 
@@ -833,6 +841,10 @@
                                 <div class="form-group">
                                     <label><span class="tooltip-wrapper">Recovery Rate (%)<span class="tooltip-icon" data-tooltip="Percentage of overcharges successfully recovered"></span></span></label>
                                     <input type="number" id="freightRecoveryRate" step="1" value="75" placeholder="75">
+                                </div>
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Spent on Freight Audits (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on freight audits? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="freightTimeSpent" step="1" value="10" placeholder="10">
                                 </div>
                             </div>
                         </div>
@@ -1029,6 +1041,13 @@
                                     <input type="number" id="advApDiscountCapture" step="1" value="40" placeholder="40">
                                 </div>
                             </div>
+                            
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Spent on AP Issues (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on AP issue resolution? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="advApTimeSpent" step="1" value="10" placeholder="10">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- ADVANCED FREIGHT -->
@@ -1106,6 +1125,13 @@
                                     <input type="number" id="advFreightClaimApproval" step="1" value="55" placeholder="55">
                                 </div>
                             </div>
+                            
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label><span class="tooltip-wrapper">Time Spent on Freight Audits (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on freight audits? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="advFreightTimeSpent" step="1" value="10" placeholder="10">
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -1170,11 +1196,11 @@
                         <div class="metric-value" id="recoveryPerEmployee">$0</div>
                     </div>
                     <div class="metric-box">
-                        <div class="metric-label">Payback (1 FTE)</div>
+                        <div class="metric-label">Payback (1 FTE @ 80K)</div>
                         <div class="metric-value" id="paybackMonths">0 mo</div>
                     </div>
                     <div class="metric-box">
-                        <div class="metric-label">DSO Improvement</div>
+                        <div class="metric-label">Finance Operations Time Savings</div>
                         <div class="metric-value" id="dsoImpact">0 days</div>
                     </div>
                 </div>
@@ -1463,11 +1489,18 @@
             const paybackMonths = baseTotal > 0 ? Math.ceil((80000 * 12) / baseTotal) : 0;
             document.getElementById('paybackMonths').textContent = paybackMonths + ' mo';
 
-            const dsoField = document.getElementById(isAdvancedMode ? 'advRecTimeSpent' : 'recTimeSpent');
-            const timeSpent = parseFloat(dsoField ? dsoField.value : 0) || 0;
+            const apTimeField = document.getElementById(isAdvancedMode ? 'advApTimeSpent' : 'apTimeSpent');
+            const freightTimeField = document.getElementById(isAdvancedMode ? 'advFreightTimeSpent' : 'freightTimeSpent');
+            const recTimeField = document.getElementById(isAdvancedMode ? 'advRecTimeSpent' : 'recTimeSpent');
+            
+            const apTime = parseFloat(apTimeField ? apTimeField.value : 0) || 0;
+            const freightTime = parseFloat(freightTimeField ? freightTimeField.value : 0) || 0;
+            const recTime = parseFloat(recTimeField ? recTimeField.value : 0) || 0;
+            
+            const totalTimeSpent = apTime + freightTime + recTime;
             const aiAutomationRate = 0.80; // 80% CloudSquid AI benchmark
-            const timeReduction = Math.round(timeSpent * aiAutomationRate);
-            document.getElementById('dsoImpact').textContent = '-' + timeReduction + ' days';
+            const totalTimeReduction = Math.round(totalTimeSpent * aiAutomationRate);
+            document.getElementById('dsoImpact').textContent = '-' + totalTimeReduction + ' days';
         }
 
         function formatNumber(num) {
