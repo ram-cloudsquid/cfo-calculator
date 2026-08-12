@@ -673,15 +673,16 @@
     <div class="container">
         <header>
             <h1>CFO ROI Calculator</h1>
-            <p>Estimate recovery potential from finance automation</p>
+            <p>Estimate your recovery potential from your finance workflow automation with AI Agents</p>
 
             <p class="calculator-intro">
-                This calculator estimates how much money your finance team could recover each year by
-                automating three common leak points: Accounts Payable errors (duplicate payments, missed
-                discounts, fraud), Freight Audit overcharges, and Receivables &amp; Deduction disputes.
-                Enter your company profile and either use industry-benchmark defaults (Simple mode) or your
-                own detailed figures (Advanced mode) to see a Bear/Base/Bull recovery estimate, then download
-                a full editable Excel model to review or share internally.
+                Reveal how much your finance team could recover by automating these three leak points:<br><br>
+                
+                • <strong>Accounts Payable</strong> — Duplicate payments, missed discounts, fraud<br>
+                • <strong>Freight Audit</strong> — Overcharges and compliance gaps<br>
+                • <strong>Receivables & Deductions</strong> — Disputed claims and delays<br><br>
+                
+                <strong>Simple Mode</strong> (2 min) uses industry benchmarks. <strong>Advanced Mode</strong> (5 min) uses your numbers. Both deliver a Bear/Base/Bull estimate + downloadable Excel model.
             </p>
 
             <!-- Mode Toggle -->
@@ -772,16 +773,16 @@
                                     <input type="number" id="recCurrentRecovery" step="1" value="35" placeholder="35">
                                 </div>
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Target Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered, what percentage do you expect automation to capture?"></span></span></label>
-                                    <input type="number" id="recTargetCapture" step="1" value="60" placeholder="60">
+                                    <label><span class="tooltip-wrapper">Target AI Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered, % AI can capture - 80% is cloudsquid agents touchless benchmark"></span></span></label>
+                                    <input type="number" id="recTargetCapture" step="1" value="80" placeholder="80">
                                 </div>
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Prevention (%)<span class="tooltip-icon" data-tooltip="Percentage of deductions you can prevent going forward"></span></span></label>
-                                    <input type="number" id="recPrevention" step="1" value="12" placeholder="12">
+                                    <label><span class="tooltip-wrapper">Time Spent on Deductions (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on Deduction recovery? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="recTimeSpent" step="1" value="10" placeholder="10">
                                 </div>
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Time Reduction (%)<span class="tooltip-icon" data-tooltip="Expected reduction in processing time (days)"></span></span></label>
-                                    <input type="number" id="recTimeReduction" step="5" value="40" placeholder="40">
+                                    <label><span class="tooltip-wrapper">Deduction Prevention (%)<span class="tooltip-icon" data-tooltip="50% is industry standard with tight compliance and data alignment"></span></span></label>
+                                    <input type="number" id="recPrevention" step="1" value="50" placeholder="50">
                                 </div>
                             </div>
                         </div>
@@ -928,16 +929,16 @@
                             <div class="subsection-title">AI Impact</div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Target Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered across all categories, what percentage do you expect automation to capture?"></span></span></label>
+                                    <label><span class="tooltip-wrapper">Target AI Capture Rate (%)<span class="tooltip-icon" data-tooltip="Of the deductions currently going unrecovered across all categories, % AI can capture - 80% is cloudsquid agents touchless benchmark"></span></span></label>
                                     <input type="number" id="advRecTargetCapture" step="1" value="80" placeholder="80">
                                 </div>
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Time Reduction (%)<span class="tooltip-icon" data-tooltip="Expected reduction in processing time (days)"></span></span></label>
-                                    <input type="number" id="advRecTimeReduction" step="5" value="40" placeholder="40">
+                                    <label><span class="tooltip-wrapper">Time Spent on Deductions (days)<span class="tooltip-icon" data-tooltip="How many days does your team spend on Deduction recovery? AI automation reduces this by 80%"></span></span></label>
+                                    <input type="number" id="advRecTimeSpent" step="1" value="10" placeholder="10">
                                 </div>
                                 <div class="form-group">
-                                    <label><span class="tooltip-wrapper">Deduction Prevention (%)<span class="tooltip-icon" data-tooltip="Percentage of deductions you can prevent with better processes"></span></span></label>
-                                    <input type="number" id="advRecPrevention" step="1" value="15" placeholder="15">
+                                    <label><span class="tooltip-wrapper">Deduction Prevention (%)<span class="tooltip-icon" data-tooltip="50% is industry standard with tight compliance and data alignment"></span></span></label>
+                                    <input type="number" id="advRecPrevention" step="1" value="50" placeholder="50">
                                 </div>
                             </div>
                         </div>
@@ -1466,9 +1467,11 @@
             const paybackMonths = baseTotal > 0 ? Math.ceil((80000 * 12) / baseTotal) : 0;
             document.getElementById('paybackMonths').textContent = paybackMonths + ' mo';
 
-            const dsoField = document.getElementById(isAdvancedMode ? 'advRecTimeReduction' : 'recTimeReduction');
-            const dsoValue = Math.round((parseFloat(dsoField ? dsoField.value : 0) || 0) / 10);
-            document.getElementById('dsoImpact').textContent = '-' + dsoValue + ' days';
+            const dsoField = document.getElementById(isAdvancedMode ? 'advRecTimeSpent' : 'recTimeSpent');
+            const timeSpent = parseFloat(dsoField ? dsoField.value : 0) || 0;
+            const aiAutomationRate = 0.80; // 80% CloudSquid AI benchmark
+            const timeReduction = Math.round(timeSpent * aiAutomationRate);
+            document.getElementById('dsoImpact').textContent = '-' + timeReduction + ' days';
         }
 
         function formatNumber(num) {
@@ -2102,9 +2105,9 @@
         .modal-header h2,
         .assumptions-modal-header h2,
         .assumption-section-title {
-            font-family: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
-            letter-spacing: -0.6px;
+            letter-spacing: normal;
             color: var(--cs-ink);
         }
 
